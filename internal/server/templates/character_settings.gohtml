@@ -409,6 +409,24 @@
                     </label>
                 {{ end }}
             </div>
+
+           
+            <h3>Runewords(leveling)</h3>
+            <label>
+                <input type="checkbox" style="padding-right: 30px" name="enableRwMaker" {{ if .Config.RwMaker.Enabled }}checked{{ end }}/>
+                Enable the bot to automatically make Runewords for leveling.
+            </label><br>
+
+            <div class="rw-grid">
+                {{ range $index, $runeword := .RunewordList }}
+                    <label>
+                        <input type="checkbox" name="enabledRws" value="{{ $runeword }}" {{ if contains $.Config.RwMaker.EnabledRws $runeword }}checked{{ end }}>
+                        {{ $runeword }}
+                    </label>
+                {{ end }}
+            </div>
+
+
             <h3>Leader mode</h3>
             <label>
                 <input type="checkbox" name="companionLeader" {{ if .Config.Companion.Leader }}checked{{ end }}/>
