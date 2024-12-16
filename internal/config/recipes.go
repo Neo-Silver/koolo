@@ -46,3 +46,12 @@ var AvailableRecipes = []string{
 	"Caster Amulet",
 	"Caster Ring",
 }
+
+var AvailableRunewordList = []string{
+	// List out all the Runewords from runeword_maker.go
+	"Stealth",
+	"Spirit Sword",
+	"Lore",
+	"Insight",
+	"Rhyme",
+}

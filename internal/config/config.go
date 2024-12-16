@@ -225,6 +225,10 @@ type CharacterCfg struct {
 		Enabled        bool     `yaml:"enabled"`
 		EnabledRecipes []string `yaml:"enabledRecipes"`
 	} `yaml:"cubing"`
+	RwMaker struct {
+		Enabled    bool     `yaml:"enabled"`
+		EnabledRws []string `yaml:"enabledRws"`
+	} `yaml:"runewordmaking"`
 	BackToTown struct {
 		NoHpPotions     bool `yaml:"noHpPotions"`
 		NoMpPotions     bool `yaml:"noMpPotions"`
