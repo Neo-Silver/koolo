@@ -25,6 +25,7 @@ func PreRun(firstRun bool) error {
 	Gamble()
 	Stash(false)
 	CubeRecipes()
+	RwMaker()
 
 	if ctx.CharacterCfg.Game.Leveling.EnsurePointsAllocation {
 		ResetStats()
