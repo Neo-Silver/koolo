@@ -931,6 +931,12 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 		cfg.CubeRecipes.Enabled = r.Form.Has("enableCubeRecipes")
 		enabledRecipes := r.Form["enabledRecipes"]
 		cfg.CubeRecipes.EnabledRecipes = enabledRecipes
+
+		//RwMaker
+		cfg.RwMaker.Enabled = r.Form.Has("enableRwMaker")
+		enabledRws := r.Form["enabledRws"]
+		cfg.RwMaker.EnabledRws = enabledRws
+
 		// Companion
 
 		// Companion config
@@ -993,5 +999,6 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 		DisabledRuns: disabledRuns,
 		AvailableTZs: availableTZs,
 		RecipeList:   config.AvailableRecipes,
+		RunewordList: config.AvailableRunewordList,
 	})
 }

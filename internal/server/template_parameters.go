@@ -28,6 +28,7 @@ type CharacterSettings struct {
 	DisabledRuns []string
 	AvailableTZs map[int]string
 	RecipeList   []string
+	RunewordList []string
 }
 
 type ConfigData struct {
