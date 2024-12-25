@@ -71,6 +71,9 @@ func RwMaker() error {
 		return nil
 	}
 
+	// Check existing runewords first
+	existingRws := CheckExistingRunewords(ctx)
+
 	if !HasEnoughFreeRows(ctx.CharacterCfg.Inventory.InventoryLock) {
 		ctx.Logger.Debug("Not enough free inventory rows, skipping Runeword creation")
 		return nil
@@ -81,6 +84,35 @@ func RwMaker() error {
 		for _, currentRuneword := range Runeword {
 			if !slices.Contains(ctx.CharacterCfg.RwMaker.EnabledRws, currentRuneword.Name) {
 				continue
+			}
+
+			// Skip if we already have this runeword
+			switch currentRuneword.Name {
+			case "Spirit Sword":
+				if existingRws.HasSpirit {
+					ctx.Logger.Debug("Spirit Sword already exists, skipping")
+					continue
+				}
+			case "Stealth":
+				if existingRws.HasStealth {
+					ctx.Logger.Debug("Stealth already exists, skipping")
+					continue
+				}
+			case "Lore":
+				if existingRws.HasLore {
+					ctx.Logger.Debug("Lore already exists, skipping")
+					continue
+				}
+			case "Insight":
+				if existingRws.HasInsight {
+					ctx.Logger.Debug("Insight already exists, skipping")
+					continue
+				}
+			case "Rhyme":
+				if existingRws.HasRhyme {
+					ctx.Logger.Debug("Rhyme already exists, skipping")
+					continue
+				}
 			}
 
 			usedItemTracker := make(map[int]bool)
@@ -523,4 +555,175 @@ func filterStashableItems(items []data.Item) []data.Item {
 	}
 
 	return filteredItems
+}
+
+type RunewordStatus struct {
+	HasStealth bool
+	HasSpirit  bool
+	HasLore    bool
+	HasInsight bool
+	HasRhyme   bool
+}
+
+func CheckExistingRunewords(ctx *context.Status) RunewordStatus {
+	status := RunewordStatus{}
+	items := ctx.Data.Inventory.ByLocation(item.LocationStash, item.LocationSharedStash, item.LocationEquipped)
+
+	for _, item := range items {
+		if !item.IsRuneword {
+			continue
+		}
+
+		// Spirit Sword check (Crystal Sword base + specific stats)
+		if string(item.Name) == "CrystalSword" {
+			hasFCR := false
+			hasFHR := false
+			hasMana := false
+			hasMagicAbsorb := false
+
+			for _, stat := range item.Stats {
+				switch stat.ID {
+				case 105: // FCR
+					if stat.Value <= 35 {
+						hasFCR = true
+					}
+				case 99: // FHR
+					if stat.Value == 55 {
+						hasFHR = true
+					}
+				case 9: // Max Mana
+					if stat.Value >= 89 {
+						hasMana = true
+					}
+				case 147: // Magic Absorb
+					if stat.Value >= 3 {
+						hasMagicAbsorb = true
+					}
+				}
+			}
+
+			if hasFCR && hasFHR && hasMana && hasMagicAbsorb {
+				status.HasSpirit = true
+			}
+		}
+
+		// Stealth check (Light armor + specific stats)
+		if isLightArmor(string(item.Name)) {
+			hasRunWalk := false
+			hasFHR := false
+			hasFCR := false
+
+			for _, stat := range item.Stats {
+				switch stat.ID {
+				case 96: // Run/Walk
+					if stat.Value == 25 {
+						hasRunWalk = true
+					}
+				case 99: // FHR
+					if stat.Value == 25 {
+						hasFHR = true
+					}
+				case 105: // FCR
+					if stat.Value <= 25 {
+						hasFCR = true
+					}
+				}
+			}
+
+			if hasRunWalk && hasFHR && hasFCR {
+				status.HasStealth = true
+			}
+		}
+
+		// Lore check (Any helm + specific stats)
+		if isHelm(string(item.Name)) {
+			hasEnergy := false
+			hasLightRes := false
+
+			for _, stat := range item.Stats {
+				switch stat.ID {
+				case 1: // Energy
+					if stat.Value == 10 {
+						hasEnergy = true
+					}
+				case 41: // LightRes
+					if stat.Value == 30 {
+						hasLightRes = true
+					}
+				}
+			}
+
+			if hasEnergy && hasLightRes {
+				status.HasLore = true
+			}
+		}
+
+		// Insight check (Polearm + specific stats)
+		if isPolearm(string(item.Name)) {
+			hasFCR := false
+			hasManaAfterKill := false
+
+			for _, stat := range item.Stats {
+				switch stat.ID {
+				case 105: // FCR
+					if stat.Value <= 35 {
+						hasFCR = true
+					}
+				case 138: // mana after kill
+					if stat.Value == 2 {
+						hasManaAfterKill = true
+					}
+				}
+			}
+
+			if hasFCR && hasManaAfterKill {
+				status.HasInsight = true
+			}
+		}
+
+		// Rhyme check (Shield + specific stats)
+		if isShield(string(item.Name)) {
+			hasBlockRate := false
+			hasFrozen := false
+
+			for _, stat := range item.Stats {
+				switch stat.ID {
+				case 102: // Block Rate
+					if stat.Value == 40 {
+						hasBlockRate = true
+					}
+				case 153: // cannot be frozen
+					if stat.Value >= 1 {
+						hasFrozen = true
+					}
+				}
+			}
+
+			if hasBlockRate && hasFrozen {
+				status.HasRhyme = true
+			}
+		}
+	}
+
+	return status
+}
+
+// Helper functions to check item types
+func isLightArmor(name string) bool {
+	lightArmors := []string{"QuiltedArmor", "LeatherArmor", "HardLeatherArmor", "StuddedLeather"}
+	return slices.Contains(lightArmors, name)
+}
+
+func isHelm(name string) bool {
+	return name == "Cap" // Add more helm types if needed
+}
+
+func isPolearm(name string) bool {
+	polearms := []string{"Voulge", "Scythe", "Poleaxe", "Halberd"}
+	return slices.Contains(polearms, name)
+}
+
+func isShield(name string) bool {
+	shields := []string{"SmallShield", "BoneShield"}
+	return slices.Contains(shields, name)
 }
