@@ -28,6 +28,16 @@ func IdentifyAll(skipIdentify bool) error {
 		return nil
 	}
 
+	if ctx.CharacterCfg.Game.UseCainIdentify {
+		ctx.Logger.Debug("Identifying all item with Cain...")
+		err := CainIdentify()
+		// if identifying with cain fails then we should continue to identify using tome
+		if err == nil {
+			return nil
+		}
+		ctx.Logger.Debug("Identifying with Cain failed, continuing with identifying with tome", "err", err)
+	}
+
 	idTome, found := ctx.Data.Inventory.Find(item.TomeOfIdentify, item.LocationInventory)
 	if !found {
 		ctx.Logger.Warn("ID Tome not found, not identifying items")
@@ -70,6 +80,8 @@ func CainIdentify() error {
 
 	// Select the identify option
 	ctx.HID.KeySequence(win.VK_HOME, win.VK_DOWN, win.VK_RETURN)
+	utils.Sleep(500)
+
 	if len(itemsToIdentify()) > 0 {
 
 		// Close the NPC interact menu if it's open
