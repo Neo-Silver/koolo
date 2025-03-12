@@ -57,6 +57,18 @@ func (s *SinglePlayerSupervisor) Start() error {
 		case <-ctx.Done():
 			return nil
 		default:
+
+			wasDisconnected, err := s.CheckAndHandleDisconnect()
+			if err != nil {
+				utils.Sleep(5000)
+				continue
+			}
+
+			if wasDisconnected {
+				utils.Sleep(2000)
+				continue
+			}
+
 			if firstRun {
 				err = s.waitUntilCharacterSelectionScreen()
 				if err != nil {
@@ -109,6 +121,16 @@ func (s *SinglePlayerSupervisor) Start() error {
 			err = s.bot.Run(ctx, firstRun, runs)
 			firstRun = false
 
+			wasDisconnected, discErr := s.CheckAndHandleDisconnect()
+			if discErr != nil {
+				utils.Sleep(5000)
+				continue
+			}
+
+			if wasDisconnected {
+				continue
+			}
+
 			var gameFinishReason event.FinishReason
 			if err != nil {
 				switch {
@@ -139,6 +161,43 @@ func (s *SinglePlayerSupervisor) Start() error {
 			}
 		}
 	}
+}
+
+func (s *SinglePlayerSupervisor) CheckAndHandleDisconnect() (bool, error) {
+	if s.bot.ctx.CharacterCfg.AuthMethod == "None" {
+		return false, nil
+	}
+	s.bot.ctx.RefreshGameData()
+	utils.Sleep(5000)
+
+	if !s.bot.ctx.GameReader.IsOnline() && (s.bot.ctx.GameReader.IsInCharacterSelectionScreen() || s.bot.ctx.GameReader.IsInLobby()) {
+		s.bot.ctx.Logger.Warn("Detected disconnect, attempting to reconnect")
+
+		maxAttempts := 3
+		for attempt := 1; attempt <= maxAttempts; attempt++ {
+			s.bot.ctx.Logger.Info(fmt.Sprintf("Reconnection attempt %d/%d", attempt, maxAttempts))
+
+			// Click online tab
+			s.bot.ctx.HID.Click(game.LeftButton, 1090, 32)
+			utils.Sleep(5000)
+
+			s.bot.ctx.RefreshGameData()
+			if s.bot.ctx.GameReader.IsOnline() {
+				return true, nil
+			}
+
+			utils.Sleep(2000)
+		}
+
+		s.bot.ctx.Logger.Error("Failed to reconnect after multiple attempts, killing client")
+		if err := s.KillClient(); err != nil {
+			return true, fmt.Errorf("failed to kill client after disconnect: %w", err)
+		}
+
+		return true, fmt.Errorf("killed client after failed reconnection attempts")
+	}
+
+	return false, nil
 }
 
 // This function is responsible for handling all interactions with joining/creating games
