@@ -923,6 +923,13 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 			}
 			cfg.Game.Diablo.AttackFromDistance = attackFromDistance
 		}
+
+		timerValue, err := strconv.Atoi(r.Form.Get("userSetTimer"))
+		if err != nil {
+			timerValue = 60
+		}
+		cfg.Game.Idle.Idletime = timerValue
+
 		cfg.Game.Leveling.EnsurePointsAllocation = r.Form.Has("gameLevelingEnsurePointsAllocation")
 		cfg.Game.Leveling.EnsureKeyBinding = r.Form.Has("gameLevelingEnsureKeyBinding")
 
