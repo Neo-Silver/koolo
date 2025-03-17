@@ -134,6 +134,16 @@
     </fieldset>
 {{ end }}
 
+{{ define "idle" }}
+    <fieldset class="options-group">
+        <legend>Idle Options</legend>
+        <label>
+            Idle Time (seconds):
+            <input type="number" name="userSetTimer" value="{{ .Config.Game.Idle.Idletime }}" min="0">
+        </label>
+    </fieldset>
+{{ end }}
+
 {{ define "leveling" }}
     <fieldset>
         <label><input type="checkbox" name="gameLevelingEnsurePointsAllocation" {{ if .Config.Game.Leveling.EnsurePointsAllocation }}checked{{ end }}> Automatically allocate stats/skills</label>
