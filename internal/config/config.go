@@ -228,6 +228,9 @@ type CharacterCfg struct {
 			RescueAnya     bool `yaml:"rescueAnya"`
 			KillAncients   bool `yaml:"killAncients"`
 		} `yaml:"quests"`
+		Idle struct {
+			Idletime int `yaml:"idletime"`
+		} `yaml:"idle"`
 	} `yaml:"game"`
 	Companion struct {
 		Leader           bool   `yaml:"leader"`

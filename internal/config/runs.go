@@ -31,6 +31,7 @@ const (
 	DrifterCavernRun    Run = "drifter_cavern"
 	SpiderCavernRun     Run = "spider_cavern"
 	EnduguRun           Run = "endugu"
+	IdleRun             Run = "idle"
 )
 
 var AvailableRuns = map[Run]interface{}{
@@ -62,4 +63,5 @@ var AvailableRuns = map[Run]interface{}{
 	DrifterCavernRun:    nil,
 	SpiderCavernRun:     nil,
 	EnduguRun:           nil,
+	IdleRun:             nil,
 }
