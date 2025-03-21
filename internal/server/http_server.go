@@ -357,8 +357,6 @@ func qualityClass(quality string) string {
 		return "rare-quality"
 	case "Unique":
 		return "unique-quality"
-	case "Crafted":
-		return "crafted-quality"
 	default:
 		return "unknown-quality"
 	}
@@ -801,6 +799,10 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 			cfg.Character.BerserkerBarb.FindItemSwitch = r.Form.Has("characterFindItemSwitch")
 		}
 
+		// Goldie specific options
+		if cfg.Character.Class == "goldie" {
+		}
+
 		// Nova Sorceress specific options
 		if cfg.Character.Class == "nova" || cfg.Character.Class == "lightsorc" {
 			bossStaticThreshold, err := strconv.Atoi(r.Form.Get("novaBossStaticThreshold"))
@@ -960,6 +962,8 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 
 		// Gambling
 		cfg.Gambling.Enabled = r.Form.Has("gamblingEnabled")
+		cfg.Gambling.LessRefresh = r.Form.Has("lessrefreshEnabled")
+		cfg.Gambling.GambleMap = r.Form.Has("gamblemapEnabled")
 
 		// Cube Recipes
 		cfg.CubeRecipes.Enabled = r.Form.Has("enableCubeRecipes")
@@ -980,6 +984,7 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 		cfg.BackToTown.NoMpPotions = r.Form.Has("noMpPotions")
 		cfg.BackToTown.MercDied = r.Form.Has("mercDied")
 		cfg.BackToTown.EquipmentBroken = r.Form.Has("equipmentBroken")
+		cfg.BackToTown.NoKeys = r.Form.Has("noKeys")
 
 		config.SaveSupervisorConfig(supervisorName, cfg)
 		http.Redirect(w, r, "/", http.StatusSeeOther)
