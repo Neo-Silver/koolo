@@ -84,5 +84,5 @@ func InteractNPC(npcID npc.ID) error {
 		}
 	}
 
-	return fmt.Errorf("failed to interact with NPC after %d attempts", maxAttempts)
+	return fmt.Errorf("")
 }

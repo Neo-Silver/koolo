@@ -118,6 +118,7 @@ func InteractObject(obj data.Object, isCompletedFn func() bool) error {
 
 		if o.IsHovered {
 			ctx.HID.Click(game.LeftButton, currentMouseCoords.X, currentMouseCoords.Y)
+			utils.Sleep(300)
 			waitingForInteraction = true
 			interactionAttempts++
 
