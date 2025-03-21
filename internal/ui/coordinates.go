@@ -112,4 +112,16 @@ const (
 
 	CloseMiniPanelClassicX = 639
 	CloseMiniPanelClassicY = 686
+
+	ShopTabBtnXClassic3 = 600
+	ShopTabBtnYClassic3 = 90
+
+	ShopTabBtnXClassic2 = 500
+	ShopTabBtnYClassic2 = 90
+
+	ShopTabBtnXClassic1 = 400
+	ShopTabBtnYClassic1 = 90
+
+	ShopTabBtnXClassic0 = 300
+	ShopTabBtnYClassic0 = 90
 )
