@@ -31,8 +31,6 @@ func BuildCharacter(ctx *context.Context) (context.Character, error) {
 	switch strings.ToLower(ctx.CharacterCfg.Character.Class) {
 	case "sorceress":
 		return BlizzardSorceress{BaseCharacter: bc}, nil
-	case "fireballsorc":
-		return FireballSorceress{BaseCharacter: bc}, nil
 	case "nova":
 		return NovaSorceress{BaseCharacter: bc}, nil
 	case "hydraorb":
@@ -53,8 +51,9 @@ func BuildCharacter(ctx *context.Context) (context.Character, error) {
 		return Javazon{BaseCharacter: bc}, nil
 	case "berserker":
 		return &Berserker{BaseCharacter: bc}, nil // Return a pointer to Berserker
+	case "goldie":
+		return &Goldie{BaseCharacter: bc}, nil
 	}
-
 	return nil, fmt.Errorf("class %s not implemented", ctx.CharacterCfg.Character.Class)
 }
 
