@@ -22,8 +22,8 @@ func Gamble() error {
 	ctx := context.Get()
 	ctx.SetLastAction("Gamble")
 
-	stashedGold, _ := ctx.Data.PlayerUnit.FindStat(stat.StashGold, 0)
-	if ctx.CharacterCfg.Gambling.Enabled && stashedGold.Value >= 2480000 {
+	Gold, _ := ctx.Data.PlayerUnit.FindStat(stat.Gold, 0)
+	if ctx.CharacterCfg.Gambling.Enabled && Gold.Value >= 800000 {
 		ctx.Logger.Info("Time to gamble! Visiting vendor...")
 
 		vendorNPC := town.GetTownByArea(ctx.Data.PlayerUnit.Area).GamblingNPC()
@@ -46,6 +46,12 @@ func Gamble() error {
 
 		if !ctx.Data.OpenMenus.NPCShop {
 			return errors.New("failed opening gambling window")
+		}
+
+		if ctx.CharacterCfg.Gambling.LessRefresh {
+			return lessRefreshGamble()
+		} else if ctx.CharacterCfg.Gambling.GambleMap {
+			return gambleMap()
 		}
 
 		return gambleItems()
@@ -116,8 +122,8 @@ func GambleSingleItem(items []string, desiredQuality item.Quality) error {
 			}
 		}
 
-		if ctx.Data.PlayerUnit.TotalPlayerGold() < 150000 {
-			return errors.New("gold is below 150000, stopping gamble")
+		if ctx.Data.PlayerUnit.TotalPlayerGold() < 300000 {
+			return errors.New("gold is below 300000, stopping gamble")
 		}
 
 		// Check for any of the desired items in the vendor's inventory
@@ -159,8 +165,8 @@ func gambleItems() error {
 		ctx.RefreshGameData()
 
 		// Check if we should stop gambling due to low gold
-		if ctx.Data.PlayerUnit.TotalPlayerGold() < 500000 {
-			ctx.Logger.Info("Finished gambling - gold below 500k",
+		if ctx.Data.PlayerUnit.TotalPlayerGold() < 300000 {
+			ctx.Logger.Info("Finished gambling - gold below 300k",
 				slog.Int("currentGold", ctx.Data.PlayerUnit.TotalPlayerGold()))
 			return step.CloseAllMenus()
 		}
@@ -241,6 +247,219 @@ func gambleItems() error {
 		}
 	}
 }
+
+func lessRefreshGamble() error {
+	ctx := context.Get()
+	ctx.SetLastAction("gambleItems")
+	var itemBought data.Item
+	var refreshAttempts int
+	const maxRefreshAttempts = 11
+
+	for {
+		ctx.PauseIfNotPriority()
+		ctx.RefreshGameData()
+
+		// Process bought item if we have one
+		if itemBought.Name != "" {
+			// Find the bought item in inventory
+			for _, itm := range ctx.Data.Inventory.ByLocation(item.LocationInventory) {
+				if itm.UnitID == itemBought.UnitID {
+					itemBought = itm
+					ctx.Logger.Debug("Gambled for item", slog.Any("item", itemBought))
+					break
+				}
+			}
+
+			// Check if item matches NIP rules
+			if _, result := ctx.Data.CharacterCfg.Runtime.Rules.EvaluateAll(itemBought); result == nip.RuleResultFullMatch {
+				ctx.Logger.Info("Found item matching NIP rules, keeping", slog.Any("item", itemBought))
+			} else {
+				// Filter not pass, selling the item
+				ctx.Logger.Debug("Item doesn't match NIP rules, selling", slog.Any("item", itemBought))
+				town.SellItem(itemBought)
+			}
+
+			itemBought = data.Item{} // Reset itemBought after processing
+			continue
+		}
+
+		itemFound := false
+
+		// Check if we should stop gambling due to low gold
+		if ctx.Data.PlayerUnit.TotalPlayerGold() < 300000 {
+			ctx.Logger.Info("Finished gambling - gold below 300k",
+				slog.Int("currentGold", ctx.Data.PlayerUnit.TotalPlayerGold()))
+			return step.CloseAllMenus()
+		}
+
+		if len(ctx.Data.CharacterCfg.Gambling.Items) > 0 {
+			for _, currentItem := range ctx.Data.CharacterCfg.Gambling.Items {
+				itm, found := ctx.Data.Inventory.Find(currentItem, item.LocationVendor)
+				if found {
+					utils.Sleep(100)
+					town.BuyItem(itm, 1)
+					itemBought = itm
+					itemFound = true
+					ctx.Logger.Debug("Found and bought item",
+						slog.String("item", string(currentItem)))
+					refreshAttempts = 0
+					break
+				}
+			}
+		}
+
+		// If no items found, try refreshing the gambling window
+		if !itemFound {
+			refreshAttempts++
+			if refreshAttempts >= maxRefreshAttempts {
+				ctx.Logger.Info("Too many refresh attempts without finding items, reopening gambling window")
+				// Close and reopen gambling window
+				if err := step.CloseAllMenus(); err != nil {
+					return err
+				}
+				utils.Sleep(200)
+				vendorNPC := town.GetTownByArea(ctx.Data.PlayerUnit.Area).GamblingNPC()
+				if err := InteractNPC(vendorNPC); err != nil {
+					return err
+				}
+				// Select gamble option
+				if vendorNPC == npc.Jamella {
+					ctx.HID.KeySequence(win.VK_HOME, win.VK_DOWN, win.VK_RETURN)
+				} else {
+					ctx.HID.KeySequence(win.VK_HOME, win.VK_DOWN, win.VK_DOWN, win.VK_RETURN)
+				}
+				refreshAttempts = 0
+				continue
+			}
+			RefreshGamblingWindow(ctx)
+			utils.Sleep(500)
+		}
+	}
+}
+
+func gambleMap() error {
+	ctx := context.Get()
+	ctx.SetLastAction("gambleMap")
+
+	// Map to track how many times each item type has been purchased
+	itemPurchaseCount := make(map[string]int)
+
+	// Initialize count for each gambling item
+	for _, itemType := range ctx.Data.CharacterCfg.Gambling.Items {
+		itemPurchaseCount[string(itemType)] = 0
+	}
+
+	var refreshAttempts int
+	var itemBought data.Item
+	const maxRefreshAttempts = 11
+	const maxPurchasesPerItem = 5
+
+	for {
+		ctx.PauseIfNotPriority()
+		ctx.RefreshGameData()
+
+		allItemsMaxed := true
+		for _, count := range itemPurchaseCount {
+			if count < maxPurchasesPerItem {
+				allItemsMaxed = false
+				break
+			}
+		}
+
+		// reset
+		if allItemsMaxed {
+			for itemType := range itemPurchaseCount {
+				itemPurchaseCount[itemType] = 0
+			}
+		}
+
+		// Process bought item if we have one
+		if itemBought.Name != "" {
+			// Find the bought item in inventory
+			for _, itm := range ctx.Data.Inventory.ByLocation(item.LocationInventory) {
+				if itm.UnitID == itemBought.UnitID {
+					itemBought = itm
+					ctx.Logger.Debug("Gambled for item", slog.Any("item", itemBought))
+					break
+				}
+			}
+
+			// Check if item matches NIP rules
+			if _, result := ctx.Data.CharacterCfg.Runtime.Rules.EvaluateAll(itemBought); result == nip.RuleResultFullMatch {
+				ctx.Logger.Info("Found item matching NIP rules, keeping", slog.Any("item", itemBought))
+			} else {
+				// Filter not pass, selling the item
+				ctx.Logger.Debug("Item doesn't match NIP rules, selling", slog.Any("item", itemBought))
+				town.SellItem(itemBought)
+			}
+
+			itemBought = data.Item{}
+			refreshAttempts = 0
+			continue
+		}
+
+		itemFound := false
+
+		// Check if we should stop gambling due to low gold
+		if ctx.Data.PlayerUnit.TotalPlayerGold() < 300000 {
+			ctx.Logger.Info("Finished gambling - gold below 300k",
+				slog.Int("currentGold", ctx.Data.PlayerUnit.TotalPlayerGold()))
+			return step.CloseAllMenus()
+		}
+		// Check all gambling items before refreshing
+		for _, itemType := range ctx.Data.CharacterCfg.Gambling.Items {
+			if itemPurchaseCount[string(itemType)] >= maxPurchasesPerItem {
+				continue
+			}
+
+			// Try to find the item in vendor inventory
+			itm, found := ctx.Data.Inventory.Find(itemType, item.LocationVendor)
+			if found {
+				town.BuyItem(itm, 1)
+				itemBought = itm
+
+				// item counter
+				itemPurchaseCount[string(itemType)]++
+
+				ctx.Logger.Info("Purchased item",
+					slog.String("itemType", string(itemType)),
+					slog.Int("purchaseCount", itemPurchaseCount[string(itemType)]))
+
+				itemFound = true
+				break
+			}
+		}
+
+		// If no valid items found, refresh the gambling window
+		if !itemFound {
+			refreshAttempts++
+			if refreshAttempts >= maxRefreshAttempts {
+				ctx.Logger.Info("Too many refresh attempts without finding items, reopening gambling window")
+				// Close and reopen gambling window
+				if err := step.CloseAllMenus(); err != nil {
+					return err
+				}
+				utils.Sleep(200)
+				vendorNPC := town.GetTownByArea(ctx.Data.PlayerUnit.Area).GamblingNPC()
+				if err := InteractNPC(vendorNPC); err != nil {
+					return err
+				}
+				// Select gamble option
+				if vendorNPC == npc.Jamella {
+					ctx.HID.KeySequence(win.VK_HOME, win.VK_DOWN, win.VK_RETURN)
+				} else {
+					ctx.HID.KeySequence(win.VK_HOME, win.VK_DOWN, win.VK_DOWN, win.VK_RETURN)
+				}
+				refreshAttempts = 0
+				continue
+			}
+
+			RefreshGamblingWindow(ctx)
+			utils.Sleep(500)
+		}
+	}
+}
+
 func RefreshGamblingWindow(ctx *context.Status) {
 	if ctx.Data.LegacyGraphics {
 		ctx.HID.Click(game.LeftButton, ui.GambleRefreshButtonXClassic, ui.GambleRefreshButtonYClassic)
