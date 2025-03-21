@@ -113,6 +113,8 @@ type CharacterCfg struct {
 			FindItemSwitch              bool `yaml:"find_item_switch"`
 			SkipPotionPickupInTravincal bool `yaml:"skip_potion_pickup_in_travincal"`
 		} `yaml:"berserker_barb"`
+		goldie struct {
+		} `yaml:"goldie"`
 		NovaSorceress struct {
 			BossStaticThreshold int `yaml:"boss_static_threshold"`
 		} `yaml:"nova_sorceress"`
@@ -182,6 +184,8 @@ type CharacterCfg struct {
 			ClearPortal       bool `yaml:"clearPortal"`
 			FocusOnElitePacks bool `yaml:"focusOnElitePacks"`
 		} `yaml:"tristram"`
+		GoldGambling struct {
+		} `yaml:"GoldGambling"`
 		Nihlathak struct {
 			ClearArea bool `yaml:"clearArea"`
 		} `yaml:"nihlathak"`
@@ -236,8 +240,10 @@ type CharacterCfg struct {
 		GamePassword     string `yaml:"gamePassword"`
 	} `yaml:"companion"`
 	Gambling struct {
-		Enabled bool        `yaml:"enabled"`
-		Items   []item.Name `yaml:"items"`
+		Enabled     bool        `yaml:"enabled"`
+		LessRefresh bool        `yaml:"lessrefresh"`
+		GambleMap   bool        `yaml:"gamblemap"`
+		Items       []item.Name `yaml:"items"`
 	} `yaml:"gambling"`
 	CubeRecipes struct {
 		Enabled              bool     `yaml:"enabled"`
@@ -250,6 +256,7 @@ type CharacterCfg struct {
 		NoMpPotions     bool `yaml:"noMpPotions"`
 		MercDied        bool `yaml:"mercDied"`
 		EquipmentBroken bool `yaml:"equipmentBroken"`
+		NoKeys          bool `yaml:"noKeys"`
 	} `yaml:"backtotown"`
 	Runtime struct {
 		Rules nip.Rules   `yaml:"-"`

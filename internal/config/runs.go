@@ -17,6 +17,7 @@ const (
 	TristramRun         Run = "tristram"
 	LowerKurastRun      Run = "lower_kurast"
 	LowerKurastChestRun Run = "lower_kurast_chest"
+	GoldGamblingRun     Run = "GoldGambling"
 	StonyTombRun        Run = "stony_tomb"
 	PitRun              Run = "pit"
 	ArachnidLairRun     Run = "arachnid_lair"
@@ -48,6 +49,7 @@ var AvailableRuns = map[Run]interface{}{
 	TristramRun:         nil,
 	LowerKurastRun:      nil,
 	LowerKurastChestRun: nil,
+	GoldGamblingRun:     nil,
 	StonyTombRun:        nil,
 	PitRun:              nil,
 	ArachnidLairRun:     nil,
