@@ -67,6 +67,8 @@ func BuildRuns(cfg *config.CharacterCfg) (runs []Run) {
 			runs = append(runs, NewLowerKurast())
 		case config.LowerKurastChestRun:
 			runs = append(runs, NewLowerKurastChest())
+		case config.GoldGamblingRun:
+			runs = append(runs, NewGoldGambling())
 		case config.BaalRun:
 			runs = append(runs, NewBaal(nil))
 		case config.TalRashaTombsRun:
