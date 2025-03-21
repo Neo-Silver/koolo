@@ -95,31 +95,15 @@ func RunStarted(be BaseEvent, runName string) RunStartedEvent {
 }
 
 type ItemBlackListedEvent struct {
-
-
 	BaseEvent
-
-
 	Item data.Drop
-
-
 }
 
 func ItemBlackListed(be BaseEvent, drop data.Drop) ItemBlackListedEvent {
-
-
 	return ItemBlackListedEvent{
-
-
 		BaseEvent: be,
-
-
 		Item:      drop,
-
-
 	}
-
-
 }
 
 type CompanionLeaderAttackEvent struct {
