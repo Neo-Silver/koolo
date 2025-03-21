@@ -48,9 +48,6 @@
                         <option value="lightsorc" {{ if eq .Config.Character.Class
                         "lightsorc" }}selected{{ end }}>Lightning Sorceress
                         </option>
-                        <option value="fireballsorc" {{ if eq .Config.Character.Class
-                        "fireballsorc" }}selected{{ end }}>Fireball Sorceress
-                        </option>
                         <option value="hammerdin" {{ if eq .Config.Character.Class
                         "hammerdin" }}selected{{ end }}>Hammer Paladin
                         </option>
@@ -80,6 +77,9 @@
                         </option>
                         <option value="berserker" {{ if eq .Config.Character.Class
                         "berserker" }}selected{{ end }}>Berserk Barbarian
+                        </option>
+                        <option value="goldie" {{ if eq .Config.Character.Class
+                        "goldie" }}selected{{ end }}>Goldie
                         </option>
                     </select>
                 </label>
@@ -440,6 +440,17 @@
                 <input type="checkbox" name="gamblingEnabled" {{ if .Config.Gambling.Enabled }}checked{{ end }}/>
                 Enabled
             </label>
+            <h6>Only Check One (or none at all)</h6>
+            <fieldset class="grid">
+            <label>
+                <input type="checkbox" name="lessrefreshEnabled" {{ if .Config.Gambling.LessRefresh }}checked{{ end }}/>
+                Less Refresh (Circlet/Coronet only Version)
+            </label>
+            <label>
+                <input type="checkbox" name="gamblemapEnabled" {{ if .Config.Gambling.GambleMap }}checked{{ end }}/>
+                Less Refresh (only refreshes, when no stated item is found)
+            </label>
+            </fieldset>
             <h3>Cube Recipes</h3>
             <label>
                 <input type="checkbox" style="padding-right: 30px" name="enableCubeRecipes" {{ if .Config.CubeRecipes.Enabled }}checked{{ end }}/>
@@ -489,6 +500,10 @@
                 <label>
                     <input id="equip_broken" type="checkbox" name="equipmentBroken" {{ if .Config.BackToTown.EquipmentBroken }}checked{{ end }}/>
                     Equipment Broken
+                </label>
+                <label>
+                    <input id="no_keys" type="checkbox" name="noKeys" {{ if .Config.BackToTown.NoKeys }}checked{{ end }}/>
+                    No Keys
                 </label>
             </fieldset>
             <fieldset class="grid">
