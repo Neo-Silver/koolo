@@ -84,7 +84,7 @@ func (s *SinglePlayerSupervisor) Start() error {
 			if config.Characters[s.name].Game.RandomizeRuns {
 				rand.Shuffle(len(runs), func(i, j int) { runs[i], runs[j] = runs[j], runs[i] })
 			}
-			event.Send(event.GameCreated(event.Text(s.name, "New game created"), "", ""))
+			event.Send(event.GameCreated(event.Text(s.name, ""), "", ""))
 			s.bot.ctx.LastBuffAt = time.Time{}
 			s.logGameStart(runs)
 
@@ -129,7 +129,7 @@ func (s *SinglePlayerSupervisor) Start() error {
 				)
 			} else {
 				gameFinishReason = event.FinishedOK
-				event.Send(event.GameFinished(event.Text(s.name, "Game finished successfully"), gameFinishReason))
+				event.Send(event.GameFinished(event.Text(s.name, ""), gameFinishReason))
 			}
 
 			if exitErr := s.bot.ctx.Manager.ExitGame(); exitErr != nil {
