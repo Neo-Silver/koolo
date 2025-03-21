@@ -170,7 +170,7 @@ func MoveToArea(dst area.ID) error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("failed to interact with area %s after %d attempts: %v", dst.Area().Name, maxAttempts, err)
+			return fmt.Errorf("")
 		}
 
 		// Wait for area transition to complete

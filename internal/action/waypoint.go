@@ -16,11 +16,11 @@ func WayPoint(dest area.ID) error {
 	ctx := context.Get()
 	ctx.SetLastAction("WayPoint")
 
-	if !ctx.Data.PlayerUnit.Area.IsTown() {
-		if err := ReturnTown(); err != nil {
-			return err
-		}
-	}
+	//if !ctx.Data.PlayerUnit.Area.IsTown() {
+	//	if err := ReturnTown(); err != nil {
+	//		return err
+	//	}
+	//}
 
 	if ctx.Data.PlayerUnit.Area == dest {
 		ctx.WaitForGameToLoad()
@@ -65,7 +65,7 @@ func WayPoint(dest area.ID) error {
 	// Verify that we've reached the destination
 	ctx.RefreshGameData()
 	if ctx.Data.PlayerUnit.Area != dest {
-		return fmt.Errorf("failed to reach destination area %s using waypoint", area.Areas[dest].Name)
+		return fmt.Errorf("")
 	}
 
 	return nil
