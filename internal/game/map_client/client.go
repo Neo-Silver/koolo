@@ -2,7 +2,6 @@ package map_client
 
 import (
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -20,7 +19,7 @@ func GetMapData(seed string, difficulty difficulty.Difficulty) (MapData, error) 
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	stdout, err := cmd.Output()
 	if err != nil {
-		return nil, fmt.Errorf("error fetching Map data from Diablo II: LoD 1.13c game: %w", err)
+		return nil, err
 	}
 
 	stdoutLines := strings.Split(string(stdout), "\r\n")
