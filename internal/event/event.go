@@ -47,6 +47,14 @@ func WithScreenshot(supervisor string, message string, img image.Image) BaseEven
 	}
 }
 
+func WithoutScreenshot(supervisor string, message string) BaseEvent {
+	return BaseEvent{
+		message:    message,
+		occurredAt: time.Now(),
+		supervisor: supervisor,
+	}
+}
+
 func Text(supervisor string, message string) BaseEvent {
 	return BaseEvent{
 		message:    message,

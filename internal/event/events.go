@@ -87,18 +87,6 @@ type RunStartedEvent struct {
 	RunName string
 }
 
-type ItemBlackListedEvent struct {
-	BaseEvent
-	Item data.Drop
-}
-
-func ItemBlackListed(be BaseEvent, drop data.Drop) ItemBlackListedEvent {
-	return ItemBlackListedEvent{
-		BaseEvent: be,
-		Item:      drop,
-	}
-}
-
 func RunStarted(be BaseEvent, runName string) RunStartedEvent {
 	return RunStartedEvent{
 		BaseEvent: be,
