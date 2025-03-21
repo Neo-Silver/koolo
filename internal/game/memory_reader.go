@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"strconv"
 	"sync"
@@ -63,7 +62,7 @@ func (gd *MemoryReader) FetchMapData() error {
 
 	mapData, err := map_client.GetMapData(strconv.Itoa(int(gd.mapSeed)), config.Characters[gd.supervisorName].Game.Difficulty)
 	if err != nil {
-		return fmt.Errorf("error fetching map data: %w", err)
+		return err
 	}
 
 	areas := make(map[area.ID]AreaData)
